@@ -405,6 +405,10 @@
       <input type="checkbox" id="uncertOnlyToggle">
       未証明のみ
     </label>
+    <label class="period-toggle" title="既存のスプレッドシートの続きの行に貼り付けたいとき用。列名の行を出力しません。">
+      <input type="checkbox" id="noHeaderToggle">
+      ヘッダーなし(追記用)
+    </label>
     <div class="period-spacer"></div>
     <div class="period-count">対象: <b id="periodCount">0</b>件</div>
     <button class="btn btn-ghost" id="btnResetPeriod">リセット</button>
@@ -762,14 +766,15 @@
       sheetName = '追跡番号一覧';
     }
 
-    const ws = XLSX.utils.json_to_sheet(rows);
+    const ws = XLSX.utils.json_to_sheet(rows, { skipHeader: el('noHeaderToggle').checked });
     ws['!cols'] = colWidths;
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, sheetName);
     const label = periodLabel();
     const kind = trackingOnly ? 'tracking-only' : 'detail';
-    XLSX.writeFile(wb, `whatnot_tracking_${kind}_${label}.xlsx`);
-    showFlash(`${filtered.length}件を書き出しました。`, true);
+    const headerNote = el('noHeaderToggle').checked ? '_no-header' : '';
+    XLSX.writeFile(wb, `whatnot_tracking_${kind}_${label}${headerNote}.xlsx`);
+    showFlash(`${filtered.length}件を書き出しました。${el('noHeaderToggle').checked ? '(ヘッダーなし、続きの行に貼り付けできます)' : ''}`, true);
   }
 
   el('btnExportAll').addEventListener('click', () => exportXlsx(false));
